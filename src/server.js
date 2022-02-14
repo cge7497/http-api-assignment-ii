@@ -4,36 +4,34 @@ const query = require('querystring');
 
 const htmlHandler = require('./htmlHandler.js');
 const responseHandler = require('./responseHandler.js');
-const { parse } = require('path');
 
 const port = process.env.PORT || process.env.NODE_PORT || 3000;
 
 const urlStruct = {
-  'GET': {
+  GET: {
     '/': htmlHandler.getIndex,
     '/style.css': htmlHandler.getCSS,
     '/getUsers': responseHandler.getUsers,
     '/notReal': responseHandler.getNotReal,
-    notFound: responseHandler.notFound
+    notFound: responseHandler.notFound,
   },
-  'HEAD': {
+  HEAD: {
     '/getUsers': responseHandler.getUsersMeta,
     '/notReal': responseHandler.getNotRealMeta,
     notFound: responseHandler.notFound,
   },
-  'POST': {
-    '/addUser': responseHandler.addUser
+  POST: {
+    '/addUser': responseHandler.addUser,
   },
 };
 
-//Handles when the server gets a request. Uses the request data to figure put what to send back.
+// Handles when the server gets a request. Uses the request data to figure put what to send back.
 const onRequest = (request, response) => {
   const parsedUrl = url.parse(request.url);
   const queryParams = query.parse(parsedUrl.query);
-  const type = request.headers.accept;
 
-  let method = request.method;
-  if (!request.method) method = 'GET'; //defaults to a GET method as described in assignment
+  let { method } = request;
+  if (!request.method) method = 'GET'; // defaults to a GET method as described in assignment
 
   if (urlStruct[method][parsedUrl.pathname]) {
     urlStruct[method][parsedUrl.pathname](request, response, queryParams);
