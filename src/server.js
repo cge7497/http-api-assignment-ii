@@ -26,19 +26,19 @@ const urlStruct = {
   },
 };
 
+//Handles when the server gets a request. Uses the request data to figure put what to send back.
 const onRequest = (request, response) => {
   const parsedUrl = url.parse(request.url);
   const queryParams = query.parse(parsedUrl.query);
   const type = request.headers.accept;
 
-  console.dir(parsedUrl.pathname);
   let method = request.method;
   if (!request.method) method = 'GET'; //defaults to a GET method as described in assignment
 
   if (urlStruct[method][parsedUrl.pathname]) {
     urlStruct[method][parsedUrl.pathname](request, response, queryParams);
   } else {
-    urlStruct[method].notFound(request, response, type);
+    urlStruct[method].notFound(request, response);
   }
 };
 

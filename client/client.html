@@ -6,7 +6,8 @@
   <link rel="stylesheet" type="text/css" href="/style.css">
 
   <script>
-    const handleResponse = async (response) => {
+    //Handles response from the server.
+    const handleResponse = async (response, method) => {
       const content = document.querySelector('#content');
       switch (response.status) {
         case 200:
@@ -36,11 +37,15 @@
       }
 
       const body = await response.text();
-      console.log(body); //prints the unparsed body to the console.
-
       let text;
-      let jsonObj = JSON.parse(body);
-      text = "Message: " + jsonObj.message;
+      if (method && method === 'HEAD') {
+        text = body;
+      }
+      else {
+        let jsonObj = JSON.parse(body);
+        if (jsonObj.message) text = "Message: " + jsonObj.message;
+        else text = JSON.stringify(jsonObj);
+      }
       //If we have a message, display it.
       if (text) {
         content.innerHTML += `<p>${text}</p>`;
@@ -48,31 +53,56 @@
 
     };
 
+    //sends POST request containing the described user to the server.
+    const postUser = async () => {
+      const name = document.getElementById('nameField').value;
+      const age = document.getElementById('ageField').value;
+
+      const url = '/addUser' + `?name=${name}&age=${age}`;
+
+      // Sends a fetch request to a URL set by the info on the page.
+      let response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      });
+      //Once we have a response, handle it.
+      handleResponse(response);
+    };
+
     //sends GET request to the server.
     const sendRequest = async () => {
       //Grab the info from the form
       const page = document.getElementById('urlField').value;
-      const type = document.getElementById('type').value;
       const method = document.getElementById('methodSelect').value;
 
-      const name = document.getElementById('nameField').value;
-      const age = document.getElementById('ageField').value;
-
-      const url = page + `?name=${name}&age=${age}`;
-
-      console.log('hello');
-
       // Sends a fetch request to a URL set by the info on the page.
-      let response = await fetch(url, {
+      let response = await fetch(page, {
         method: method,
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
       });
-
       //Once we have a response, handle it.
-      handleResponse(response);
+      handleResponse(response, method);
     };
+
+    const init = () => {
+      document.getElementById('nameForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        console.log('preventing default');
+        postUser();
+      });
+
+      document.getElementById('userForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        console.log('preventing default');
+        sendRequest();
+      });
+    }
+    //console.log('test');
+    window.onload = init;
   </script>
 </head>
 

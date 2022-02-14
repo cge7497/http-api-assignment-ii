@@ -5,30 +5,33 @@ const respondJSON = (request, response, status, jsonObject) => {
     'Content-Type': 'application/json',
   };
 
-  // send response with json object
   response.writeHead(status, headers);
-  response.write(JSON.stringify(jsonObject));
+  //If there is JSON to be sent back, write it to the response body.
+  if (jsonObject) response.write(JSON.stringify(jsonObject));
   response.end();
 };
 
+// send response JSON header. It has no body, as this is for HEAD requests.
 const respondJSONMeta = (request, response, status) => {
   const headers = {
     'Content-Type': 'application/json',
   };
-  // send response JSON header. It has no body, as this is for HEAD requests.
   response.writeHead(status, headers);
   response.end();
 };
 
+//sends back the users JSON object.
 const getUsers = (request, response) => {
-  const responseJSON = { users: users};
+  const responseJSON = { 'users': users};
   respondJSON(request, response, 200, responseJSON);
 }
 
+//sends back a 200 success code. 
 const getUsersMeta = (request, response) => {
   respondJSONMeta(request, response, 200);
 }
 
+//sends back a 404 error and a body with a message and id.
 const getNotReal = (request, response) => {
   let statusCode = 404;
   let showID = true;
@@ -39,16 +42,29 @@ const getNotReal = (request, response) => {
   respondJSON(request, response, statusCode, responseJSON);
 };
 
+// only sends header data of the notReal page. (So just a 404 error).
 const getNotRealMeta = (request, response) => {
   respondJSONMeta(request, response, 404);
 }
 
-
+//adds a user to the user JSON object if the required queryParams are sent.
 const addUser = (request, response, queryParams) => {
   let statusCode = 201;
   let responseJSON;
-  if (queryParams.name && queryParams.age) {
-    if (users[name]) statusCode = 204;
+  const name = queryParams.name;
+  const age = queryParams.age;
+  if (name && age) {
+    //If the user already exists, update it.
+    if (users[name]) {
+      statusCode = 204;
+      users[name].age = age;
+    }
+    else {
+      users[name]= {'name': name, 'age': age};
+      responseJSON = {
+        message: "Created Successfully"
+      };
+    }
   }
   else {
     responseJSON = {
@@ -61,6 +77,7 @@ const addUser = (request, response, queryParams) => {
   respondJSON(request, response, statusCode, responseJSON);
 };
 
+//sends back an error code and message if the user requests a page that isn't already handled.
 const notFound = (request, response) => {
   const responseJSON = {
     message: 'The page you are looking for was not found.',
