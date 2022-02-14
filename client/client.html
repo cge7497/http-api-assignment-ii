@@ -1,13 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <title>Our simple HTTP server</title>
   <link rel="stylesheet" type="text/css" href="/style.css">
-  
-  <script>
 
+  <script>
+    const handleResponse = async (response) => {
+      const content = document.querySelector('#content');
+      switch (response.status) {
+        case 200:
+          content.innerHTML = `<b>Success</b>`;
+          break;
+        case 400:
+          content.innerHTML = '<b>Bad Request</b>';
+          break;
+        case 201:
+          content.innerHTML = '<b>Created</b>';
+          break;
+        case 204:
+          content.innerHTML = `<b>Updated (No Content)</b>`;
+          break;
+        case 404:
+          content.innerHTML = `<b>Resource Not Found</b>`;
+          break;
+        case 500:
+          content.innerHTML = `<b>Internal Server Error</b>`;
+          break;
+        case 501:
+          content.innerHTML = `<b>Not Implemented</b>`;
+          break;
+        default: //any other status code
+          content.innerHTML = `<b>Resource Not Found</b>`;
+          break;
+      }
+
+      const body = await response.text();
+      console.log(body); //prints the unparsed body to the console.
+
+      let text;
+      let jsonObj = JSON.parse(body);
+      text = "Message: " + jsonObj.message;
+      //If we have a message, display it.
+      if (text) {
+        content.innerHTML += `<p>${text}</p>`;
+      }
+
+    };
+
+    //sends GET request to the server.
+    const sendRequest = async () => {
+      //Grab the info from the form
+      const page = document.getElementById('urlField').value;
+      const type = document.getElementById('type').value;
+      const method = document.getElementById('methodSelect').value;
+
+      const name = document.getElementById('nameField').value;
+      const age = document.getElementById('ageField').value;
+
+      const url = page + `?name=${name}&age=${age}`;
+
+      console.log('hello');
+
+      // Sends a fetch request to a URL set by the info on the page.
+      let response = await fetch(url, {
+        method: method,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      });
+
+      //Once we have a response, handle it.
+      handleResponse(response);
+    };
   </script>
 </head>
+
 <body>
   <section id="top">
     <h3>POST Status Code Tests</h3>
@@ -15,7 +83,7 @@
       <label for="name">Name: </label>
       <input id="nameField" type="text" name="name" />
       <label for="age">Age: </label>
-      <input id="ageField" type="number" name="age" min="0" max="100" step="1"/>
+      <input id="ageField" type="number" name="age" min="0" max="100" step="1" />
       <input type="submit" value="Add User" />
     </form>
     <form id="userForm" action="/getUsers" method="get">
@@ -33,4 +101,5 @@
   <section id="content">
   </section>
 </body>
+
 </html>
